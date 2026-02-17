@@ -1,0 +1,2009 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>叙述婚礼｜接单执行系统</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#0f1620; --panel2:#111b27; --text:#e9f1ff; --muted:#9fb0c7;
+      --line:rgba(255,255,255,.10); --brand:#7dd3fc; --brand2:#a78bfa; --ok:#34d399; --warn:#fbbf24; --bad:#fb7185;
+      --shadow: 0 12px 40px rgba(0,0,0,.40);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+    }
+    [data-theme="light"]{
+      --bg:#f6f8fb; --panel:#ffffff; --panel2:#ffffff; --text:#0b1220; --muted:#5a6b80;
+      --line:rgba(12,18,32,.10); --shadow: 0 12px 40px rgba(9,30,66,.12);
+      --brand:#0ea5e9; --brand2:#7c3aed;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:var(--sans); color:var(--text); background:
+      radial-gradient(1200px 600px at 20% -10%, rgba(125,211,252,.22), transparent 60%),
+      radial-gradient(900px 500px at 90% 10%, rgba(167,139,250,.20), transparent 60%),
+      radial-gradient(900px 600px at 50% 110%, rgba(52,211,153,.10), transparent 60%),
+      var(--bg);
+    }
+    a{color:inherit}
+    .app{display:grid; grid-template-columns: 300px 1fr; height:100%}
+    @media (max-width: 980px){ .app{grid-template-columns: 1fr} .sidebar{position:fixed; inset:0 auto 0 0; width:86vw; max-width:340px; transform:translateX(-105%); transition:.2s; z-index:50} .sidebar.show{transform:translateX(0)} .overlay{display:block} }
+    .overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.38); z-index:40}
+    .overlay.show{display:block}
+    .sidebar{
+      border-right:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.02), transparent 22%), rgba(0,0,0,.06);
+      padding:18px 16px;
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center; padding:10px 10px 14px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(125,211,252,.18), rgba(167,139,250,.12));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+    }
+    .logo{
+      width:42px; height:42px; border-radius:14px; display:grid; place-items:center;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), transparent 55%),
+                  linear-gradient(135deg, rgba(125,211,252,.95), rgba(167,139,250,.95));
+      color:#061021; font-weight:900; letter-spacing:.5px;
+    }
+    .brand h1{margin:0; font-size:16px}
+    .brand p{margin:2px 0 0; font-size:12px; color:var(--muted)}
+    .nav{margin-top:14px; display:flex; flex-direction:column; gap:6px}
+    .nav button{
+      all:unset; cursor:pointer; display:flex; gap:10px; align-items:center;
+      padding:10px 10px; border-radius:12px; border:1px solid transparent;
+      color:var(--text); background:transparent;
+    }
+    .nav button:hover{background:rgba(255,255,255,.04); border-color: rgba(255,255,255,.06)}
+    [data-theme="light"] .nav button:hover{background:rgba(12,18,32,.04); border-color: rgba(12,18,32,.06)}
+    .nav button.active{
+      background: linear-gradient(135deg, rgba(125,211,252,.16), rgba(167,139,250,.12));
+      border-color: rgba(125,211,252,.25);
+    }
+    .nav .ico{width:20px; text-align:center; opacity:.95}
+    .small{font-size:12px; color:var(--muted)}
+    .main{padding:18px 18px 26px}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:12px 14px; border-radius:14px;
+      background: rgba(255,255,255,.03); border:1px solid var(--line);
+    }
+    [data-theme="light"] .topbar{background: rgba(12,18,32,.03)}
+    .top-left{display:flex; align-items:center; gap:10px}
+    .hamb{display:none}
+    @media (max-width:980px){ .hamb{display:inline-flex} }
+    .btn{
+      cursor:pointer; border:1px solid var(--line); background: rgba(255,255,255,.03);
+      color:var(--text); border-radius:12px; padding:9px 12px; font-weight:600;
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    [data-theme="light"] .btn{background: rgba(12,18,32,.03)}
+    .btn:hover{transform: translateY(-1px)}
+    .btn.primary{
+      border-color: rgba(125,211,252,.35);
+      background: linear-gradient(135deg, rgba(14,165,233,.30), rgba(124,58,237,.18));
+    }
+    .btn.danger{border-color: rgba(251,113,133,.45); background: rgba(251,113,133,.12)}
+    .grid{display:grid; gap:12px; margin-top:14px}
+    .grid.cols2{grid-template-columns: 1fr 1fr}
+    .grid.cols3{grid-template-columns: 1fr 1fr 1fr}
+    @media (max-width: 1100px){ .grid.cols3{grid-template-columns:1fr} .grid.cols2{grid-template-columns:1fr} }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 18%), var(--panel);
+      border:1px solid var(--line); border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{padding:14px 14px 10px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:10px}
+    .card .hd h2{margin:0; font-size:14px}
+    .card .bd{padding:14px}
+    .kpi{display:flex; flex-direction:column; gap:6px}
+    .kpi .v{font-size:22px; font-weight:800}
+    .pill{
+      display:inline-flex; align-items:center; gap:6px; padding:6px 10px;
+      border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,.03); color:var(--muted); font-size:12px
+    }
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .sep{height:1px; background:var(--line); margin:12px 0}
+    input, select, textarea{
+      width:100%; padding:10px 11px; border-radius:12px;
+      border:1px solid var(--line); background: rgba(255,255,255,.02); color:var(--text);
+      outline:none;
+    }
+    [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{background: rgba(12,18,32,.02)}
+    textarea{min-height: 92px; resize: vertical}
+    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px}
+    .formgrid{display:grid; gap:12px; grid-template-columns: 1fr 1fr}
+    @media (max-width: 900px){ .formgrid{grid-template-columns:1fr} }
+    .tableWrap{overflow:auto; border:1px solid var(--line); border-radius:14px}
+    table{width:100%; border-collapse:collapse; min-width:720px; background: rgba(255,255,255,.02)}
+    th,td{padding:10px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top}
+    th{font-size:12px; color:var(--muted); position:sticky; top:0; background: rgba(0,0,0,.22)}
+    [data-theme="light"] th{background: rgba(255,255,255,.8)}
+    tr:hover td{background: rgba(255,255,255,.03)}
+    .check{
+      width:18px; height:18px; border-radius:6px; border:1px solid var(--line);
+      display:inline-grid; place-items:center; cursor:pointer; user-select:none;
+    }
+    .check.done{background: rgba(52,211,153,.22); border-color: rgba(52,211,153,.55)}
+    .muted{color:var(--muted)}
+    .tag{display:inline-flex; padding:5px 9px; border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,.02); font-size:12px; margin:2px 6px 0 0}
+    .notice{
+      padding:10px 12px; border-radius:14px; border:1px solid rgba(125,211,252,.30);
+      background: rgba(125,211,252,.10); color: var(--text);
+    }
+    .toast{
+      position:fixed; right:16px; bottom:16px; z-index:100;
+      display:flex; flex-direction:column; gap:10px;
+    }
+    .toast .t{
+      min-width:260px; max-width:360px;
+      padding:10px 12px; border-radius:14px; border:1px solid var(--line);
+      background: rgba(0,0,0,.55); backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+    [data-theme="light"] .toast .t{background: rgba(255,255,255,.92)}
+    .t b{display:block; margin-bottom:2px}
+    .hidden{display:none !important}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab{
+      cursor:pointer; padding:8px 10px; border-radius:12px; border:1px solid var(--line);
+      background: rgba(255,255,255,.02); color: var(--muted); font-weight:700; font-size:12px;
+    }
+    .tab.active{color:var(--text); border-color: rgba(125,211,252,.35); background: rgba(125,211,252,.10)}
+    .progress{
+      height:10px; border-radius:999px; border:1px solid var(--line); overflow:hidden; background: rgba(255,255,255,.03);
+    }
+    .bar{height:100%; width:0%; background: linear-gradient(90deg, rgba(52,211,153,.85), rgba(125,211,252,.85))}
+    
+    /* Schedule Calendar */
+    .calWrap{display:flex; flex-direction:column; gap:10px}
+    .calHead{display:grid; grid-template-columns:repeat(7, 1fr); gap:8px}
+    .calHead div{font-size:12px; color:var(--muted); text-align:center; padding:8px 0; border:1px solid var(--line); border-radius:12px; background: rgba(255,255,255,.02)}
+    .calGrid{display:grid; grid-template-columns:repeat(7, 1fr); gap:8px}
+    .calDay{
+      min-height:96px; padding:10px; border-radius:14px; border:1px solid var(--line);
+      background: rgba(255,255,255,.02); cursor:pointer; position:relative;
+      transition: transform .12s ease;
+    }
+    .calDay:hover{transform: translateY(-1px)}
+    .calDay.out{opacity:.45}
+    .calDay.has{border-color: rgba(125,211,252,.35); background: rgba(125,211,252,.08)}
+    .calNum{font-weight:900; font-size:14px}
+    .calMeta{margin-top:6px; font-size:11px; color:var(--muted); line-height:1.35}
+    .calBadge{
+      position:absolute; right:10px; top:10px;
+      padding:4px 8px; border-radius:999px; border:1px solid var(--line);
+      background: rgba(255,255,255,.03); font-size:12px; color:var(--text);
+    }
+    .listGroup{margin-bottom:12px}
+    .listGroup .dateTitle{font-weight:900; margin:0 0 8px}
+    .miniCard{
+      border:1px solid var(--line); border-radius:14px; padding:10px 12px;
+      background: rgba(255,255,255,.02);
+      margin-bottom:8px;
+    }
+    .miniCard .top{display:flex; justify-content:space-between; gap:10px; align-items:flex-start}
+
+    
+    /* Print Area (day run sheet) */
+    body.printing *{visibility:hidden !important}
+    body.printing #printArea, body.printing #printArea *{visibility:visible !important}
+    body.printing #printArea{display:block !important; position:fixed; inset:0; padding:0; background:#fff}
+    #printArea{display:none}
+    #printArea.show{display:block}
+    .a4{
+      width:210mm; min-height:297mm; margin:0 auto; padding:14mm 14mm 12mm;
+      color:#111; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+    }
+    .a4 h1{margin:0 0 6mm; font-size:18px}
+    .a4 .meta{display:flex; justify-content:space-between; gap:8mm; font-size:12px; color:#333}
+    .a4 .hr{height:1px; background:#ddd; margin:5mm 0}
+    .a4 .box{border:1px solid #ddd; border-radius:10px; padding:10px 12px; margin:0 0 5mm}
+    .a4 .row{display:flex; gap:8mm; flex-wrap:wrap}
+    .a4 .pill{display:inline-block; padding:4px 10px; border:1px solid #ddd; border-radius:999px; font-size:12px}
+    .a4 table{width:100%; border-collapse:collapse; font-size:12px; min-width:0; background:#fff}
+    .a4 th,.a4 td{border:1px solid #ddd; padding:7px 8px; vertical-align:top}
+    .a4 th{background:#f6f6f6; text-align:left}
+    .a4 .muted{color:#666}
+    .a4 .sig{display:flex; justify-content:space-between; gap:10mm; margin-top:6mm}
+    .a4 .sig div{border-top:1px solid #bbb; padding-top:3mm; width:48%}
+    .a4 .noteLines{height:26mm; border:1px dashed #bbb; border-radius:10px; padding:8px; color:#777}
+    @media print{
+      .sidebar, .topbar, .btn, .toast, .overlay{display:none !important}
+      body{background:#fff}
+      .main{padding:0}
+      .card{box-shadow:none; border:1px solid #ddd}
+      table{min-width:0}
+    }
+  </style>
+</head>
+<body>
+<div class="overlay" id="overlay" data-action="closeSidebar"></div>
+
+<div class="app" id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">AN</div>
+      <div>
+        <h1>叙述婚礼｜接单执行系统</h1>
+        <p>客户 → 方案 → 执行 → 交付（单文件离线版）</p>
+      </div>
+    </div>
+
+    <div class="nav" id="nav">
+      <button class="active" data-view="dashboard"><span class="ico">🏠</span>仪表盘 <span class="small">总览</span></button>
+      <button data-view="schedule"><span class="ico">📅</span>档期记录 <span class="small">日历</span></button>
+      <button data-view="clients"><span class="ico">👥</span>客户档案 <span class="small">管理</span></button>
+      <button data-view="client"><span class="ico">🧾</span>项目执行 <span class="small">清单</span></button>
+      <button data-view="templates"><span class="ico">🧩</span>清单模板库 <span class="small">可编辑</span></button>
+      <button data-view="deliver"><span class="ico">🎁</span>纪念交付包 <span class="small">交付</span></button>
+      <button data-view="training"><span class="ico">🎓</span>服务体系训练营 <span class="small">内训</span></button>
+      <button data-view="settings"><span class="ico">⚙️</span>设置与备份 <span class="small">导入导出</span></button>
+    </div>
+
+    <div class="sep"></div>
+    <div class="small">
+      <div>✅ 自动保存：LocalStorage</div>
+      <div>⬇ 导出：JSON 备份</div>
+      <div>🖨 打印：A4 / PDF</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="top-left">
+        <button class="btn hamb" data-action="openSidebar">☰ 菜单</button>
+        <span class="pill" id="savePill">已保存</span>
+        <span class="pill" id="currentClientPill">当前客户：未选择</span>
+      </div>
+      <div class="row">
+        <button class="btn" data-action="print">🖨 打印当前页</button>
+        <button class="btn primary" data-action="newClient">➕ 新建客户</button>
+      </div>
+    </div>
+
+    <!-- Views -->
+    <section id="view-dashboard" class="grid cols3">
+      <div class="card">
+        <div class="hd"><h2>客户总览</h2><span class="pill" id="kpiActive">进行中</span></div>
+        <div class="bd">
+          <div class="kpi"><div class="v" id="kpiClients">0</div><div class="muted">客户数量</div></div>
+          <div class="sep"></div>
+          <div class="kpi"><div class="v" id="kpiThisMonth">0</div><div class="muted">本月档期</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h2>执行进度</h2><span class="pill">平均完成度</span></div>
+        <div class="bd">
+          <div class="progress"><div class="bar" id="avgBar"></div></div>
+          <div class="row" style="margin-top:10px">
+            <span class="pill">平均：<b id="avgPct">0%</b></span>
+            <span class="pill">逾期提醒：<b id="overdueCount">0</b></span>
+          </div>
+          <div class="sep"></div>
+          <div class="small">提示：给客户套用模板后，项目执行页会显示分阶段清单与进度条。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h2>快捷动作</h2><span class="pill">一键套用</span></div>
+        <div class="bd">
+          <div class="notice">
+            <b>推荐工作流</b>
+            <div class="small" style="margin-top:6px; line-height:1.6">
+              ① 建客户 → ② 选模板套用 → ③ 按阶段打勾执行 → ④ 记录复盘与风险 → ⑤ 生成纪念交付包 → ⑥ 售后回访
+            </div>
+          </div>
+          <div class="sep"></div>
+          <div class="row">
+            <button class="btn" data-action="goto" data-view="clients">👥 去客户列表</button>
+            <button class="btn" data-action="goto" data-view="templates">🧩 去模板库</button>
+            <button class="btn" data-action="goto" data-view="training">🎓 去训练营</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+    <section id="view-schedule" class="hidden">
+      <div class="card">
+        <div class="hd">
+          <h2>档期记录</h2>
+          <div class="row">
+            <button class="btn" data-action="scheduleMode" data-mode="calendar">📅 日历</button>
+            <button class="btn" data-action="scheduleMode" data-mode="month">📋 月订单</button>
+            <button class="btn" data-action="schedulePrev">◀</button>
+            <span class="pill" id="scheduleMonthLabel">—</span>
+            <button class="btn" data-action="scheduleNext">▶</button>
+            <button class="btn primary" data-action="scheduleAdd">➕ 添加客户档期</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div id="scheduleCalendar"></div>
+          <div id="scheduleMonthList" class="hidden"></div>
+          <div class="sep"></div>
+          <div class="small muted">说明：本页的“订单/档期”来自客户档案中的【档期日期】字段；点击日期可查看当天订单并快速新增/编辑。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Day Modal -->
+    <div class="hidden" id="dayModalWrap">
+      <div class="overlay show" id="dayModalOverlay" data-action="closeDayModal"></div>
+      <div id="dayModal" class="card" style="position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); width:min(720px, 92vw); z-index:60">
+        <div class="hd">
+          <h2 id="dayModalTitle">—</h2>
+          <div class="row">
+            <button class="btn" data-action="printDayRun">🖨 当天执行单一键打印</button>
+            <button class="btn primary" data-action="dayModalAdd">➕ 当天新增客户</button>
+            <button class="btn" data-action="closeDayModal">✕ 关闭</button>
+          </div>
+        </div>
+        <div class="bd" id="dayModalBody"></div>
+      </div>
+    </div>
+
+    <section id="view-clients" class="hidden">
+      <div class="grid cols2">
+        <div class="card">
+          <div class="hd">
+            <h2>客户列表</h2>
+            <div class="row">
+              <input id="clientSearch" placeholder="搜索：姓名 / 电话 / 备注" style="width:240px"/>
+              <button class="btn" data-action="export">⬇ 导出</button>
+              <button class="btn" data-action="import">⬆ 导入</button>
+            </div>
+          </div>
+          <div class="bd">
+            <div id="clientList"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h2 id="clientFormTitle">新建 / 编辑客户</h2><span class="pill">自动保存</span></div>
+          <div class="bd">
+            <div class="formgrid">
+              <div><label>客户姓名</label><input id="fName" placeholder="如：张三 & 李四"/></div>
+              <div><label>档期日期</label><input id="fDate" type="date"/></div>
+              <div><label>电话</label><input id="fPhone" placeholder=""/></div>
+              <div><label>微信</label><input id="fWechat" placeholder=""/></div>
+              <div><label>城市 / 酒店</label><input id="fCity" placeholder=""/></div>
+              <div>
+                <label>项目状态</label>
+                <select id="fStatus">
+                  <option value="in_progress">进行中</option>
+                  <option value="booked">已定档</option>
+                  <option value="completed">已完成</option>
+                  <option value="paused">暂停</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="formgrid">
+              <div><label>套餐 / 服务范围</label><input id="fPackage" placeholder="如：全案策划 / 轻策划 / 司仪统筹等"/></div>
+              <div><label>预算区间</label><input id="fBudget" placeholder="如：3-5W"/></div>
+            </div>
+
+            <div style="margin-top:12px">
+              <label>备注（可写：风格偏好 / 家庭关系 / 特殊安排 / 风险点）</label>
+              <textarea id="fNotes" placeholder="建议用：背景-诉求-限制-决策人-风险-下一步"></textarea>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="row">
+              <button class="btn primary" data-action="saveClient">💾 保存客户</button>
+              <button class="btn" data-action="setCurrent">⭐ 设为当前客户</button>
+              <button class="btn danger" data-action="deleteClient">🗑 删除</button>
+              <button class="btn" data-action="goto" data-view="client">🧾 去项目执行</button>
+            </div>
+
+            <div class="sep"></div>
+            <div class="notice">
+              <b>客户沟通方法融合（不显示来源）</b>
+              <div class="small" style="margin-top:6px; line-height:1.7">
+                本系统默认将“三层沟通”写进流程：<br/>
+                ① 示范拆解：给出参考样例 → 拆解结构 → 对照练习；<br/>
+                ② 引导共创：用开放提问让客户说出“原因与优先级”，再做复述确认；<br/>
+                ③ 体验加分：为关键节点设计一处“超预期小惊喜”，并把交付仪式感写进清单。
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-client" class="hidden">
+      <div class="grid cols2">
+        <div class="card">
+          <div class="hd"><h2>当前客户信息</h2><span class="pill" id="clientMetaPill">未选择</span></div>
+          <div class="bd" id="clientMeta"></div>
+        </div>
+        <div class="card">
+          <div class="hd"><h2>清单套用与进度</h2><span class="pill">按阶段执行</span></div>
+          <div class="bd">
+            <div class="row">
+              <select id="applyTemplateSelect" style="min-width:260px"></select>
+              <button class="btn primary" data-action="applyTemplate">🧩 套用到当前客户</button>
+              <button class="btn" data-action="clearClientChecklists">🧹 清空客户清单</button>
+            </div>
+            <div class="sep"></div>
+            <div class="tabs" id="checklistTabs"></div>
+            <div style="margin-top:10px" class="progress"><div class="bar" id="clientBar"></div></div>
+            <div class="row" style="margin-top:10px">
+              <span class="pill">完成度：<b id="clientPct">0%</b></span>
+              <span class="pill">已完成：<b id="doneCount">0</b></span>
+              <span class="pill">未完成：<b id="todoCount">0</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="hd"><h2>执行清单（可勾选 / 可编辑）</h2>
+          <div class="row">
+            <button class="btn" data-action="addChecklistRow">➕ 加一行</button>
+            <button class="btn" data-action="exportClient">⬇ 导出当前客户（JSON）</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="tableWrap">
+            <table id="checklistTable"></table>
+          </div>
+          <div class="sep"></div>
+          <div class="notice">
+            <b>风险与复盘（建议每次沟通后 3 分钟填写）</b>
+            <div class="formgrid" style="margin-top:10px">
+              <div>
+                <label>本次沟通结论（复述确认用语）</label>
+                <textarea id="briefConclusion" placeholder="如：今天确认了……优先级是……最终由……拍板。"></textarea>
+              </div>
+              <div>
+                <label>风险点与应对（提前写进执行）</label>
+                <textarea id="briefRisks" placeholder="如：长辈意见不一致→下次会议让双方父母都在场；酒店灯光不稳定→备用灯+机位预案。"></textarea>
+              </div>
+            </div>
+            <div class="row" style="margin-top:10px">
+              <button class="btn primary" data-action="saveBrief">💾 保存复盘</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-templates" class="hidden">
+      <div class="grid cols2">
+        <div class="card">
+          <div class="hd"><h2>模板列表</h2><span class="pill" id="tplCount">0</span></div>
+          <div class="bd">
+            <div class="row">
+              <input id="tplSearch" placeholder="搜索模板名称" style="width:220px"/>
+              <button class="btn" data-action="resetTemplates">♻ 恢复默认模板</button>
+            </div>
+            <div class="sep"></div>
+            <div id="tplList"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h2 id="tplEditorTitle">模板编辑器</h2><span class="pill">保存即生效</span></div>
+          <div class="bd">
+            <div class="row">
+              <button class="btn" data-action="addTplRow">➕ 加一行</button>
+              <button class="btn danger" data-action="deleteTpl">🗑 删除模板</button>
+              <button class="btn" data-action="duplicateTpl">📄 复制模板</button>
+            </div>
+            <div class="sep"></div>
+            <div class="tableWrap">
+              <table id="tplTable"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="hd"><h2>如何把模板变成“可交付的服务体系”</h2><span class="pill">训练营方法</span></div>
+        <div class="bd" style="line-height:1.75">
+          <div class="small">
+            你可以把每张模板都按“服务闭环”升级为：<b>触点 → 产出 → 证据 → 复盘</b><br/>
+            • 触点：客户什么时候感知到你在做事？（会前、会中、会后、现场、售后）<br/>
+            • 产出：你交付了什么？（清单、脚本、时间轴、图纸、备忘、照片视频、回访）<br/>
+            • 证据：让客户“看见”进度（截图/文件/确认记录/对账单/签字）<br/>
+            • 复盘：每次沟通 3 分钟写：结论 + 风险 + 下一步
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-deliver" class="hidden">
+      <div class="grid cols2">
+        <div class="card">
+          <div class="hd"><h2>选择客户</h2><span class="pill">生成交付包</span></div>
+          <div class="bd">
+            <select id="deliverClientSelect"></select>
+            <div class="sep"></div>
+            <div class="notice">
+              <b>交付包结构（默认）</b>
+              <div class="small" style="margin-top:6px; line-height:1.7">
+                ① 爱情故事摘要（可复述/可分享）<br/>
+                ② 婚礼当天时间轴（最终版）<br/>
+                ③ 关键镜头清单（摄影摄像对接）<br/>
+                ④ 现场彩排与执行要点（给团队）<br/>
+                ⑤ 纪念物清单（证书/誓词/合影/惊喜物件）<br/>
+                ⑥ 售后回访与长期关系（纪念日提醒/二次转介绍）
+              </div>
+            </div>
+            <div class="sep"></div>
+            <button class="btn primary" data-action="generateDeliver">🎁 生成预览</button>
+            <button class="btn" data-action="print">🖨 打印 / 保存为 PDF</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h2>交付包预览（可编辑）</h2><span class="pill">可直接复制</span></div>
+          <div class="bd">
+            <label>交付包内容</label>
+            <textarea id="deliverText" placeholder="点击“生成预览”后自动填充，你可以再润色成高定版本。"></textarea>
+            <div class="sep"></div>
+            <div class="row">
+              <button class="btn" data-action="copyDeliver">📋 复制到剪贴板</button>
+              <button class="btn" data-action="saveDeliver">💾 保存到客户档案</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="hd"><h2>体验加分清单（让客户主动转介绍）</h2><span class="pill">默认内置</span></div>
+        <div class="bd">
+          <div class="row">
+            <span class="tag">会前：一页式“确认清单”</span>
+            <span class="tag">会后：会议纪要 10 分钟内发出</span>
+            <span class="tag">现场：备用预案可视化</span>
+            <span class="tag">交付：仪式感包装</span>
+            <span class="tag">售后：纪念日提醒</span>
+          </div>
+          <div class="sep"></div>
+          <div class="small" style="line-height:1.7">
+            关键原则：让客户每个阶段都能“看见你在交付”。把惊喜做成可标准化的动作（可复制、可被团队执行）。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-training" class="hidden">
+      <div class="card">
+        <div class="hd"><h2>服务体系训练营（内置课程）</h2><span class="pill">示范拆解 + 引导共创 + 体验加分</span></div>
+        <div class="bd" id="trainingContent"></div>
+      </div>
+    </section>
+
+    <section id="view-settings" class="hidden">
+      <div class="grid cols2">
+        <div class="card">
+          <div class="hd"><h2>外观与偏好</h2><span class="pill">即时生效</span></div>
+          <div class="bd">
+            <div class="row">
+              <button class="btn" data-action="toggleTheme">🌓 切换主题</button>
+              <button class="btn" data-action="wipeAll">🧹 清空本地数据</button>
+            </div>
+            <div class="sep"></div>
+            <label>你的品牌名（显示在打印页顶部）</label>
+            <input id="brandName" placeholder="如：叙述婚礼 Narrate Wedding Studio"/>
+            <div class="sep"></div>
+            <button class="btn primary" data-action="saveSettings">💾 保存设置</button>
+            <div class="sep"></div>
+            <div class="small">提示：本页的“清空本地数据”不可恢复，建议先导出备份。</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h2>备份与迁移</h2><span class="pill">JSON</span></div>
+          <div class="bd">
+            <div class="notice">
+              <b>跨电脑/桌面端迁移</b>
+              <div class="small" style="margin-top:6px; line-height:1.7">
+                ① 导出 JSON → ② 在新设备打开同一 HTML → ③ 导入 JSON 即可恢复全部客户、清单勾选状态、交付包与复盘内容。
+              </div>
+            </div>
+            <div class="sep"></div>
+            <div class="row">
+              <button class="btn primary" data-action="export">⬇ 导出全量备份</button>
+              <button class="btn" data-action="import">⬆ 导入备份</button>
+              <button class="btn" data-action="downloadHTML">💾 另存本 HTML</button>
+            </div>
+            <input id="fileInput" type="file" accept="application/json" class="hidden"/>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="printArea" class="hidden"></div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Embedded template data -->
+<script id="templatesData" type="application/json">{"客户对接清单全链路": {"key": "客户对接清单全链路", "name": "客户对接清单（全链路）", "fields": ["阶段/触点", "动作（你要做什么）", "证据/交付（客户可见）", "确认点（选择题/签字）", "内部记录字段"], "rows": [{"阶段/触点": "咨询-10min", "动作（你要做什么）": "三要素收集+预约诊断", "证据/交付（客户可见）": "诊断预约确认", "确认点（选择题/签字）": "时间二选一", "内部记录字段": "线索卡：预算/场地/决策人", "_id": "8a64c77ccf", "_done": false}, {"阶段/触点": "诊断-10min", "动作（你要做什么）": "三问三给（风险/流程/下一步）", "证据/交付（客户可见）": "风险雷达草稿（截图）", "确认点（选择题/签字）": "是否进入深访（是/否）", "内部记录字段": "风险Top1+触发条件", "_id": "f2316fd6ae", "_done": false}, {"阶段/触点": "深访-60min", "动作（你要做什么）": "故事/父母/禁区/来宾画像", "证据/交付（客户可见）": "三关键词+禁区清单", "确认点（选择题/签字）": "拍板时间点", "内部记录字段": "深访表+父母诉求", "_id": "a34d9fd013", "_done": false}, {"阶段/触点": "提案-24h", "动作（你要做什么）": "一页纸提案（方向+风险+三档）", "证据/交付（客户可见）": "一页纸提案截图", "确认点（选择题/签字）": "方向A/B选择", "内部记录字段": "提案反馈+异议类型", "_id": "ccf3762205", "_done": false}, {"阶段/触点": "签约-24h", "动作（你要做什么）": "建群+群规+节点表", "证据/交付（客户可见）": "交付节点表+联系人卡", "确认点（选择题/签字）": "A是谁（拍板人）", "内部记录字段": "项目看板M0完成", "_id": "49aafe6def", "_done": false}, {"阶段/触点": "D-30", "动作（你要做什么）": "五方协作会1", "证据/交付（客户可见）": "流程确认单v2+RACI", "确认点（选择题/签字）": "机位/上菜/超时口径", "内部记录字段": "会议纪要+待办", "_id": "f9bed57402", "_done": false}, {"阶段/触点": "D-7", "动作（你要做什么）": "现场彩排+切换演练", "证据/交付（客户可见）": "口令卡+彩排纪要", "确认点（选择题/签字）": "切换方案可执行确认", "内部记录字段": "风险预案更新日期", "_id": "6249726e9e", "_done": false}, {"阶段/触点": "D+1", "动作（你要做什么）": "感谢+交付节奏确认", "证据/交付（客户可见）": "影像交付时间表", "确认点（选择题/签字）": "交付节点确认", "内部记录字段": "售后看板D+1完成", "_id": "a8913b3249", "_done": false}, {"阶段/触点": "D+7", "动作（你要做什么）": "口碑共创1", "证据/交付（客户可见）": "可转发素材包1", "确认点（选择题/签字）": "愿意发/不发", "内部记录字段": "口碑动作记录", "_id": "be9896d627", "_done": false}, {"阶段/触点": "D+30", "动作（你要做什么）": "纪念交付+转介绍铺垫", "证据/交付（客户可见）": "高定纪念册+一周年清单", "确认点（选择题/签字）": "转介绍工具卡", "内部记录字段": "转介绍线索回收", "_id": "c85b3902ad", "_done": false}]}, "五方协同清单D30": {"key": "五方协同清单D30", "name": "五方协同清单（D-30）", "fields": ["角色", "会前准备（发群）", "会中必须确认", "会后必须交付"], "rows": [{"角色": "主持", "会前准备（发群）": "父母环节口径+誓词训练卡", "会中必须确认": "父母环节时长与边界", "会后必须交付": "脚本v1（D-21）", "_id": "297427821c", "_done": false}, {"角色": "策划", "会前准备（发群）": "风格方向+物料清单草案", "会中必须确认": "动线是否影响布置/拍摄", "会后必须交付": "物料清单更新（D-25）", "_id": "70d5f0b84c", "_done": false}, {"角色": "总控", "会前准备（发群）": "流程骨架v2+风险雷达", "会中必须确认": "Top3风险切换口令&负责人", "会后必须交付": "会议纪要+待办（24h）", "_id": "d7f748c989", "_done": false}, {"角色": "摄影摄像", "会前准备（发群）": "机位需求+交付清单", "会中必须确认": "机位可实现/灯光是否够", "会后必须交付": "机位最终版（D-20）", "_id": "4ed311ec5b", "_done": false}, {"角色": "酒店", "会前准备（发群）": "厅位/上菜/超时/换厅口径", "会中必须确认": "超时费与换厅条件", "会后必须交付": "灯光音响配置单（D-25）", "_id": "1598723905", "_done": false}]}, "酒店对接清单": {"key": "酒店对接清单", "name": "酒店对接清单", "fields": ["模块", "必须问到的口径", "证据/截图", "风险与预案"], "rows": [{"模块": "厅位/换厅", "必须问到的口径": "是否可能换厅？触发条件？提前多久通知？", "证据/截图": "负责人确认截图", "风险与预案": "预案：备用厅位/切换时间轴", "_id": "a13b86eb6f", "_done": false}, {"模块": "音响/话筒", "必须问到的口径": "话筒数量？电池？备用话筒？麦克风类型？", "证据/截图": "设备清单截图", "风险与预案": "预案：自带备份/双话筒", "_id": "3754111010", "_done": false}, {"模块": "灯光", "必须问到的口径": "灯光是否可控？谁控？是否可单点追光？", "证据/截图": "控台联系人", "风险与预案": "预案：关键环节补光灯", "_id": "b0e6555e04", "_done": false}, {"模块": "上菜节奏", "必须问到的口径": "敬酒开始/暂停上菜点/加菜规则", "证据/截图": "流程口径截图", "风险与预案": "预案：调整节目/延后敬酒", "_id": "b98ee36411", "_done": false}, {"模块": "超时费", "必须问到的口径": "超时计费标准？最小单位？谁签字？", "证据/截图": "费用口径截图", "风险与预案": "预案：收口策略/切换方案", "_id": "a5a7bebdf4", "_done": false}, {"模块": "电源/走线", "必须问到的口径": "电源位置/走线限制/是否可走地毯下", "证据/截图": "电源点位图", "风险与预案": "预案：自带线材/地贴", "_id": "7ba9af937f", "_done": false}]}, "摄影摄像对接清单": {"key": "摄影摄像对接清单", "name": "摄影摄像对接清单", "fields": ["模块", "要确认的点", "交付证据", "备注"], "rows": [{"模块": "机位", "要确认的点": "主机位/副机位/摇臂/无人机是否允许", "交付证据": "机位表最终版", "备注": "走位避免挡镜头", "_id": "570ffe104e", "_done": false}, {"模块": "收音", "要确认的点": "誓词收音方案（领夹/录音笔/调音台）", "交付证据": "收音方案确认", "备注": "必须有备份", "_id": "cae6032a59", "_done": false}, {"模块": "关键情绪点", "要确认的点": "父母环节/誓词/拥抱/合影/敬酒", "交付证据": "拍摄重点清单", "备注": "提前给主持口令", "_id": "8aeb278ab4", "_done": false}, {"模块": "交付物", "要确认的点": "精修数量/成片类型/时长/节点", "交付证据": "交付清单+节点", "备注": "选片/修片规则", "_id": "87f60998c6", "_done": false}, {"模块": "素材回收", "要确认的点": "祝福/花絮/彩排素材", "交付证据": "素材回收清单", "备注": "用于纪念册与口碑", "_id": "5249b60fe4", "_done": false}]}, "婚礼当天总控清单": {"key": "婚礼当天总控清单", "name": "婚礼当天总控清单", "fields": ["时点", "总控动作", "口令/协作要点", "必须留痕"], "rows": [{"时点": "晨会-60min", "总控动作": "点名+设备检查+动线复核", "口令/协作要点": "明确切换口令与负责人", "必须留痕": "晨会纪要（群内）", "_id": "88cb1747cf", "_done": false}, {"时点": "迎宾", "总控动作": "音乐/灯光/走位", "口令/协作要点": "主持/摄影/酒店同步", "必须留痕": "迎宾问题记录", "_id": "a3673538b6", "_done": false}, {"时点": "仪式", "总控动作": "按时间轴推进+缓冲位", "口令/协作要点": "灯光/音乐口令统一", "必须留痕": "关键节点时间记录", "_id": "9ef9ee5c37", "_done": false}, {"时点": "合影", "总控动作": "合影顺序与动线", "口令/协作要点": "摄影指挥+酒店配合", "必须留痕": "合影完成确认", "_id": "c06a36ea66", "_done": false}, {"时点": "晚宴/敬酒", "总控动作": "上菜节奏+节目时长", "口令/协作要点": "酒店口径执行", "必须留痕": "超时预警", "_id": "80dd69e4e3", "_done": false}, {"时点": "收口", "总控动作": "清点物料+素材回收", "口令/协作要点": "摄影摄像交接", "必须留痕": "交付节点确认", "_id": "b01a776ccc", "_done": false}]}, "客户纪念交付包清单": {"key": "客户纪念交付包清单", "name": "客户纪念交付包清单", "fields": ["交付版本", "交付时间", "模块", "内容要点", "素材来源", "负责人"], "rows": [{"交付版本": "第一版", "交付时间": "D+7", "模块": "封面信息", "内容要点": "新人/日期/地点/三关键词/主视觉照片", "素材来源": "客户照片", "负责人": "售后", "_id": "e24e959cda", "_done": false}, {"交付版本": "第一版", "交付时间": "D+7", "模块": "时间轴纪念版", "内容要点": "关键节点时间线+缓冲位", "素材来源": "总控流程", "负责人": "总控", "_id": "83235a52bc", "_done": false}, {"交付版本": "第一版", "交付时间": "D+7", "模块": "誓词&致辞", "内容要点": "誓词/父母致辞/证婚词", "素材来源": "主持稿/录音", "负责人": "主持", "_id": "53960a237b", "_done": false}, {"交付版本": "第一版", "交付时间": "D+7", "模块": "祝福墙", "内容要点": "精选祝福10-20条", "素材来源": "现场素材", "负责人": "摄影摄像", "_id": "1600a5a1ca", "_done": false}, {"交付版本": "完整版", "交付时间": "D+30", "模块": "高光瞬间", "内容要点": "九宫格照片+三段回忆", "素材来源": "成片/照片", "负责人": "摄影摄像", "_id": "ce2d512ce7", "_done": false}, {"交付版本": "完整版", "交付时间": "D+30", "模块": "供应商致谢", "内容要点": "五方名单+感谢文案", "素材来源": "联系人卡", "负责人": "总控", "_id": "0bb3533584", "_done": false}, {"交付版本": "完整版", "交付时间": "D+30", "模块": "一周年清单", "内容要点": "纪念日提醒/照片整理/复盘", "素材来源": "模板库", "负责人": "售后", "_id": "aaad87aaa3", "_done": false}, {"交付版本": "完整版", "交付时间": "D+30", "模块": "二维码位", "内容要点": "相册/视频链接二维码（占位）", "素材来源": "云盘链接", "负责人": "售后", "_id": "674cb41f93", "_done": false}]}}</script>
+
+<script>
+(function(){
+  // ---- utilities ----
+  const $ = (s, el=document)=> el.querySelector(s);
+  const $$ = (s, el=document)=> Array.from(el.querySelectorAll(s));
+  const uid = ()=> Math.random().toString(16).slice(2,10);
+  const todayStr = ()=> new Date().toISOString().slice(0,10);
+  const fmtDate = (d)=> d ? new Date(d).toLocaleDateString('zh-CN') : '—';
+
+  function toast(title, msg){
+    const box = $('#toast');
+    const node = document.createElement('div');
+    node.className = 't';
+    node.innerHTML = `<b>${escapeHtml(title)}</b><div class="small">${escapeHtml(msg||'')}</div>`;
+    box.appendChild(node);
+    setTimeout(()=>{ node.style.opacity='0'; node.style.transform='translateY(6px)'; node.style.transition='all .2s'; }, 2400);
+    setTimeout(()=> node.remove(), 2900);
+  }
+
+  function escapeHtml(str){
+    return String(str ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+
+  function dl(filename, text, mime='text/plain'){
+    const blob = new Blob([text], {type:mime});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
+  // ---- storage ----
+  const KEY = 'narrate_wedding_exec_v1';
+  const DEFAULT_TEMPLATES = JSON.parse($('#templatesData').textContent || '{}');
+
+  const defaultState = {
+    settings: { theme:'dark', brandName:'叙述婚礼｜服务交付' },
+    templates: DEFAULT_TEMPLATES,
+    clients: [],
+    currentClientId: null
+  };
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return structuredClone(defaultState);
+      const s = JSON.parse(raw);
+      // merge-safe
+      return {
+        ...structuredClone(defaultState),
+        ...s,
+        settings: {...defaultState.settings, ...(s.settings||{})},
+        templates: s.templates && Object.keys(s.templates).length ? s.templates : structuredClone(DEFAULT_TEMPLATES),
+        clients: Array.isArray(s.clients)? s.clients : [],
+      };
+    }catch(e){
+      console.error(e);
+      return structuredClone(defaultState);
+    }
+  }
+  function save(){
+    localStorage.setItem(KEY, JSON.stringify(state));
+    $('#savePill').textContent = '已保存';
+    setTimeout(()=> $('#savePill').textContent = '已保存', 600);
+  }
+  let state = load();
+
+  // ---- theme ----
+  function applyTheme(){
+    document.documentElement.setAttribute('data-theme', state.settings.theme || 'dark');
+    $('#brandName').value = state.settings.brandName || '';
+  }
+  applyTheme();
+
+  // ---- navigation / responsive sidebar ----
+  const sidebar = $('#sidebar');
+  const overlay = $('#overlay');
+  function openSidebar(){ sidebar.classList.add('show'); overlay.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+  function showView(view){
+    $$('main section[id^="view-"]').forEach(s=> s.classList.add('hidden'));
+    $('#view-'+view).classList.remove('hidden');
+    $$('#nav button').forEach(b=> b.classList.toggle('active', b.dataset.view===view));
+    if(window.matchMedia('(max-width: 980px)').matches) closeSidebar();
+    renderAll();
+  }
+
+  // ---- clients helpers ----
+  function getClient(id){ return state.clients.find(c=> c.id===id) || null; }
+  function currentClient(){ return getClient(state.currentClientId) || null; }
+
+  function ensureClient(){
+    const c = currentClient();
+    if(!c){
+      toast('未选择客户', '请先在“客户档案”里设为当前客户。');
+      showView('clients');
+      return null;
+    }
+    return c;
+  }
+
+  function setCurrentClient(id){
+    state.currentClientId = id;
+    save();
+    renderHeader();
+  }
+
+  // ---- render header ----
+  function renderHeader(){
+    const c = currentClient();
+    $('#currentClientPill').textContent = '当前客户：' + (c ? c.name : '未选择');
+  }
+
+  // ---- dashboard ----
+  function avgProgress(){
+    const clients = state.clients;
+    if(!clients.length) return 0;
+    let sum=0;
+    for(const c of clients){
+      sum += clientProgress(c).pct;
+    }
+    return Math.round(sum / clients.length);
+  }
+
+  function clientProgress(client){
+    const lists = client.checklists || {};
+    let total=0, done=0;
+    for(const k in lists){
+      const rows = lists[k] || [];
+      for(const r of rows){
+        total++;
+        if(r._done) done++;
+      }
+    }
+    const pct = total ? Math.round(done*100/total) : 0;
+    return {total, done, pct};
+  }
+
+  function renderDashboard(){
+    $('#kpiClients').textContent = state.clients.length;
+    const now = new Date();
+    const ym = now.toISOString().slice(0,7);
+    const monthCount = state.clients.filter(c=> (c.date||'').slice(0,7)===ym).length;
+    $('#kpiThisMonth').textContent = monthCount;
+
+    const avg = avgProgress();
+    $('#avgPct').textContent = avg + '%';
+    $('#avgBar').style.width = avg + '%';
+
+    // overdue: date passed and not completed
+    const overdue = state.clients.filter(c=>{
+      if(!c.date) return false;
+      const d = new Date(c.date+'T00:00:00');
+      return d < new Date(now.toISOString().slice(0,10)+'T00:00:00') && c.status!=='completed';
+    }).length;
+    $('#overdueCount').textContent = overdue;
+
+    const active = state.clients.filter(c=> c.status==='in_progress' || c.status==='booked').length;
+    $('#kpiActive').textContent = `进行中：${active}`;
+  }
+
+  // ---- clients list + form ----
+  let editingClientId = null;
+
+  function renderClientList(){
+    const q = ($('#clientSearch').value || '').trim().toLowerCase();
+    const wrap = $('#clientList');
+    wrap.innerHTML = '';
+
+    const arr = [...state.clients].sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+    const filtered = q ? arr.filter(c=>{
+      const blob = `${c.name||''} ${c.phone||''} ${c.notes||''}`.toLowerCase();
+      return blob.includes(q);
+    }) : arr;
+
+    if(!filtered.length){
+      wrap.innerHTML = `<div class="small muted">暂无客户。点击右上角“新建客户”。</div>`;
+      return;
+    }
+
+    filtered.forEach(c=>{
+      const p = clientProgress(c);
+      const node = document.createElement('div');
+      node.className = 'card';
+      node.style.marginBottom = '10px';
+      node.innerHTML = `
+        <div class="bd">
+          <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start">
+            <div>
+              <div style="font-weight:900; font-size:14px">${escapeHtml(c.name||'未命名')}</div>
+              <div class="small muted">档期：${escapeHtml(fmtDate(c.date))} ｜ 状态：${escapeHtml(labelStatus(c.status))}</div>
+              <div class="small muted">${escapeHtml(c.phone||'')} ${c.city?('｜ '+escapeHtml(c.city)):''}</div>
+            </div>
+            <div style="text-align:right">
+              <span class="pill">${p.pct}%</span>
+              <div class="small muted" style="margin-top:6px">${p.done}/${p.total||0}</div>
+            </div>
+          </div>
+          <div class="progress" style="margin-top:10px"><div class="bar" style="width:${p.pct}%"></div></div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" data-action="editClient" data-id="${c.id}">✏️ 编辑</button>
+            <button class="btn" data-action="setCurrentById" data-id="${c.id}">⭐ 设为当前</button>
+            <button class="btn" data-action="goto" data-view="client">🧾 执行</button>
+            <button class="btn" data-action="goto" data-view="deliver">🎁 交付</button>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(node);
+    });
+  }
+
+  function labelStatus(v){
+    return ({
+      in_progress:'进行中', booked:'已定档', completed:'已完成', paused:'暂停'
+    })[v] || '进行中';
+  }
+
+  function clearClientForm(){
+    editingClientId = null;
+    $('#clientFormTitle').textContent = '新建 / 编辑客户';
+    $('#fName').value = '';
+    $('#fDate').value = '';
+    $('#fPhone').value = '';
+    $('#fWechat').value = '';
+    $('#fCity').value = '';
+    $('#fStatus').value = 'in_progress';
+    $('#fPackage').value = '';
+    $('#fBudget').value = '';
+    $('#fNotes').value = '';
+  }
+
+  function fillClientForm(c){
+    editingClientId = c.id;
+    $('#clientFormTitle').textContent = '编辑客户：' + (c.name||'');
+    $('#fName').value = c.name||'';
+    $('#fDate').value = c.date||'';
+    $('#fPhone').value = c.phone||'';
+    $('#fWechat').value = c.wechat||'';
+    $('#fCity').value = c.city||'';
+    $('#fStatus').value = c.status||'in_progress';
+    $('#fPackage').value = c.package||'';
+    $('#fBudget').value = c.budget||'';
+    $('#fNotes').value = c.notes||'';
+  }
+
+  function saveClientFromForm(){
+    const obj = {
+      id: editingClientId || uid(),
+      name: $('#fName').value.trim() || '未命名客户',
+      date: $('#fDate').value || '',
+      phone: $('#fPhone').value.trim() || '',
+      wechat: $('#fWechat').value.trim() || '',
+      city: $('#fCity').value.trim() || '',
+      status: $('#fStatus').value || 'in_progress',
+      package: $('#fPackage').value.trim() || '',
+      budget: $('#fBudget').value.trim() || '',
+      notes: $('#fNotes').value || '',
+      updatedAt: new Date().toISOString(),
+    };
+    const old = getClient(obj.id);
+    if(old){
+      Object.assign(old, obj);
+    }else{
+      obj.createdAt = new Date().toISOString();
+      obj.checklists = {};
+      obj.brief = { conclusion:'', risks:'' };
+      obj.deliver = { text:'' };
+      state.clients.push(obj);
+    }
+    save();
+    toast('已保存', '客户信息已更新。');
+    renderAll();
+    return obj.id;
+  }
+
+  function deleteClient(id){
+    const idx = state.clients.findIndex(c=> c.id===id);
+    if(idx>=0){
+      const wasCurrent = state.currentClientId===id;
+      state.clients.splice(idx,1);
+      if(wasCurrent) state.currentClientId = null;
+      save();
+      toast('已删除', '客户已移除。');
+      clearClientForm();
+      renderAll();
+    }
+  }
+
+  // ---- templates ----
+  let editingTplKey = null;
+
+  function tplArray(){
+    return Object.values(state.templates || {});
+  }
+
+  function renderTemplateSelects(){
+    const select = $('#applyTemplateSelect');
+    const select2 = $('#deliverClientSelect');
+    const tpls = tplArray().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+    select.innerHTML = tpls.map(t=> `<option value="${escapeHtml(t.key)}">${escapeHtml(t.name)}</option>`).join('');
+    $('#tplCount').textContent = '模板：' + tpls.length;
+
+    // deliver select: clients
+    const clients = [...state.clients].sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+    select2.innerHTML = clients.map(c=> `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}（${escapeHtml(c.date||'未定档')}）</option>`).join('');
+  }
+
+  function renderTplList(){
+    const q = ($('#tplSearch').value||'').trim();
+    const wrap = $('#tplList');
+    wrap.innerHTML = '';
+    const arr = tplArray().sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+    const list = q ? arr.filter(t=> (t.name||'').includes(q)) : arr;
+    if(!list.length){
+      wrap.innerHTML = `<div class="small muted">未找到模板。</div>`;
+      return;
+    }
+    list.forEach(t=>{
+      const node = document.createElement('div');
+      node.className='card';
+      node.style.marginBottom='10px';
+      node.innerHTML = `
+        <div class="bd">
+          <div style="font-weight:900">${escapeHtml(t.name)}</div>
+          <div class="small muted">字段：${escapeHtml((t.fields||[]).join(' / '))}</div>
+          <div class="small muted">行数：${(t.rows||[]).length}</div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn" data-action="editTpl" data-key="${escapeHtml(t.key)}">✏️ 编辑</button>
+            <button class="btn" data-action="applyTplToCurrent" data-key="${escapeHtml(t.key)}">🧩 套用到当前</button>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(node);
+    });
+  }
+
+  function renderTplEditor(){
+    const tbl = $('#tplTable');
+    const t = editingTplKey ? state.templates[editingTplKey] : null;
+    if(!t){
+      $('#tplEditorTitle').textContent = '模板编辑器';
+      tbl.innerHTML = '<tr><td class="small muted">请选择左侧模板进行编辑。</td></tr>';
+      return;
+    }
+    $('#tplEditorTitle').textContent = '模板编辑：' + t.name;
+    const fields = t.fields || [];
+    const rows = t.rows || [];
+    let html = '<thead><tr>';
+    html += '<th style="width:70px">操作</th>';
+    fields.forEach(f=> html += `<th>${escapeHtml(f)}</th>`);
+    html += '</tr></thead><tbody>';
+    rows.forEach((r, idx)=>{
+      html += '<tr>';
+      html += `<td>
+        <button class="btn" style="padding:6px 8px" data-action="delTplRow" data-idx="${idx}">删</button>
+      </td>`;
+      fields.forEach(f=>{
+        const v = r[f] ?? '';
+        html += `<td><textarea data-action="editTplCell" data-idx="${idx}" data-field="${escapeHtml(f)}" style="min-height:46px">${escapeHtml(v)}</textarea></td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    tbl.innerHTML = html;
+  }
+
+  function applyTemplateToClient(tplKey, client){
+    const t = state.templates[tplKey];
+    if(!t) return;
+    client.checklists = client.checklists || {};
+    // clone rows
+    const cloned = (t.rows||[]).map(r=> ({...structuredClone(r), _id: uid(), _done:false}));
+    client.checklists[tplKey] = cloned;
+    save();
+    toast('已套用模板', `已将「${t.name}」套用到该客户。`);
+  }
+
+  function resetTemplates(){
+    state.templates = structuredClone(DEFAULT_TEMPLATES);
+    editingTplKey = null;
+    save();
+    toast('已恢复默认模板', '模板库已重置。');
+    renderAll();
+  }
+
+  // ---- client view ----
+  let activeChecklistKey = null;
+
+  function renderClientMeta(){
+    const c = currentClient();
+    const wrap = $('#clientMeta');
+    const pill = $('#clientMetaPill');
+    if(!c){
+      wrap.innerHTML = `<div class="small muted">未选择客户。请在“客户档案”设为当前客户。</div>`;
+      pill.textContent = '未选择';
+      $('#briefConclusion').value = '';
+      $('#briefRisks').value = '';
+      return;
+    }
+    pill.textContent = labelStatus(c.status) + (c.date ? ('｜'+fmtDate(c.date)) : '');
+    wrap.innerHTML = `
+      <div style="font-size:18px; font-weight:900">${escapeHtml(c.name)}</div>
+      <div class="small muted" style="margin-top:6px">
+        电话：${escapeHtml(c.phone||'—')} ｜ 微信：${escapeHtml(c.wechat||'—')}<br/>
+        地点：${escapeHtml(c.city||'—')} ｜ 套餐：${escapeHtml(c.package||'—')} ｜ 预算：${escapeHtml(c.budget||'—')}
+      </div>
+      <div class="sep"></div>
+      <div class="small" style="white-space:pre-wrap; line-height:1.7">${escapeHtml(c.notes||'')}</div>
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn" data-action="goto" data-view="clients">✏️ 编辑档案</button>
+        <button class="btn" data-action="markCompleted">✅ 标记已完成</button>
+      </div>
+    `;
+    $('#briefConclusion').value = (c.brief && c.brief.conclusion) ? c.brief.conclusion : '';
+    $('#briefRisks').value = (c.brief && c.brief.risks) ? c.brief.risks : '';
+  }
+
+  function renderChecklistTabs(){
+    const c = currentClient();
+    const tabs = $('#checklistTabs');
+    tabs.innerHTML = '';
+    if(!c) return;
+    const lists = c.checklists || {};
+    const keys = Object.keys(lists);
+    if(!keys.length){
+      tabs.innerHTML = `<div class="small muted">该客户还没有清单。先从右侧选择模板套用。</div>`;
+      activeChecklistKey = null;
+      $('#checklistTable').innerHTML = '';
+      renderClientProgress();
+      return;
+    }
+    if(!activeChecklistKey || !lists[activeChecklistKey]) activeChecklistKey = keys[0];
+
+    keys.forEach(k=>{
+      const t = state.templates[k];
+      const name = t ? t.name : k;
+      const btn = document.createElement('button');
+      btn.className = 'tab' + (k===activeChecklistKey ? ' active' : '');
+      btn.textContent = name;
+      btn.dataset.action = 'switchChecklist';
+      btn.dataset.key = k;
+      tabs.appendChild(btn);
+    });
+    renderChecklistTable();
+  }
+
+  function renderClientProgress(){
+    const c = currentClient();
+    if(!c){
+      $('#clientBar').style.width='0%';
+      $('#clientPct').textContent='0%';
+      $('#doneCount').textContent='0';
+      $('#todoCount').textContent='0';
+      return;
+    }
+    const p = clientProgress(c);
+    $('#clientBar').style.width = p.pct + '%';
+    $('#clientPct').textContent = p.pct + '%';
+    $('#doneCount').textContent = p.done;
+    $('#todoCount').textContent = (p.total - p.done);
+  }
+
+  function renderChecklistTable(){
+    const c = currentClient();
+    const tbl = $('#checklistTable');
+    if(!c || !activeChecklistKey){
+      tbl.innerHTML = '';
+      return;
+    }
+    const rows = (c.checklists && c.checklists[activeChecklistKey]) ? c.checklists[activeChecklistKey] : [];
+    const t = state.templates[activeChecklistKey];
+    const fields = t ? (t.fields||[]) : [];
+    // Table
+    let html = '<thead><tr>';
+    html += '<th style="width:70px">完成</th>';
+    html += '<th style="width:80px">操作</th>';
+    fields.forEach(f=> html += `<th>${escapeHtml(f)}</th>`);
+    html += '</tr></thead><tbody>';
+    rows.forEach((r, idx)=>{
+      const done = !!r._done;
+      html += '<tr>';
+      html += `<td><div class="check ${done?'done':''}" data-action="toggleDone" data-idx="${idx}">${done?'✓':''}</div></td>`;
+      html += `<td><button class="btn" style="padding:6px 8px" data-action="delChecklistRow" data-idx="${idx}">删</button></td>`;
+      fields.forEach(f=>{
+        const v = r[f] ?? '';
+        html += `<td><textarea data-action="editChecklistCell" data-idx="${idx}" data-field="${escapeHtml(f)}" style="min-height:46px">${escapeHtml(v)}</textarea></td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    tbl.innerHTML = html;
+    renderClientProgress();
+  }
+
+  function addChecklistRow(){
+    const c = ensureClient();
+    if(!c) return;
+    if(!activeChecklistKey){
+      toast('没有清单', '请先套用一个模板。');
+      return;
+    }
+    const t = state.templates[activeChecklistKey];
+    const fields = t ? (t.fields||[]) : [];
+    const obj = {_id: uid(), _done:false};
+    fields.forEach(f=> obj[f] = '');
+    c.checklists[activeChecklistKey].unshift(obj);
+    save();
+    renderChecklistTable();
+  }
+
+  // ---- training ----
+  const TRAINING = [
+    {
+      title: '01｜接单心法：把“流程”变成“体验”',
+      bullets: [
+        '用一张“客户旅程地图”拆 5 个触点：咨询→签约→共创→现场→售后。',
+        '每个触点必须产出可交付物：清单/脚本/时间轴/确认记录/纪要。',
+        '把“看不见的努力”做成“看得见的证据”（截图、文件、确认单）。'
+      ],
+      practice: '练习：把你现有的服务拆成 5 个触点，每个触点写出“产出物 + 证明方式 + 下一步”。'
+    },
+    {
+      title: '02｜示范拆解：给客户一个可理解的参考样例',
+      bullets: [
+        '先展示 1 个高质量样例（誓词/流程/脚本/氛围参考），再拆解结构。',
+        '拆解顺序：目标→结构→关键句→节奏→注意事项。',
+        '让客户做选择题（A/B/C）而不是开放题，降低决策成本。'
+      ],
+      practice: '练习：把“主持开场/誓词引导/敬酒流程”各做 1 个样例，并拆成 5 条结构要点。'
+    },
+    {
+      title: '03｜引导共创：用提问把客户的“原因与优先级”说出来',
+      bullets: [
+        '提问框架：为什么重要？（原因）→ 你最在意什么？（优先级）→ 什么不能接受？（边界）→ 谁拍板？（决策人）。',
+        '倾听后必须复述确认：用一句话复述 + 让客户说“对/不对”。',
+        '把抽象偏好落到可执行：用“场景/动作/道具/音乐”四要素落地。'
+      ],
+      practice: '练习：写 12 个“开放问题 + 复述确认句 + 行动落地句”。'
+    },
+    {
+      title: '04｜执行系统：时间轴 + 责任人 + 预案',
+      bullets: [
+        '时间轴不是“顺序”，而是“责任分配表”：每个节点要写 负责人/到位时间/交付物/风险点。',
+        '把常见风险模板化：天气/迟到/灯光音响/长辈意见/流程临时变动。',
+        '每个风险要有 A 方案 + B 方案 + 触发条件。'
+      ],
+      practice: '练习：用系统里的清单模板，为一个真实客户做“最终版时间轴”并打印给团队。'
+    },
+    {
+      title: '05｜体验加分：标准化“超预期”',
+      bullets: [
+        '把惊喜做成可复制动作：会后 10 分钟纪要、现场备用礼盒、交付仪式感包装、售后纪念日提醒。',
+        '加分点必须与客户故事相关：不是堆物料，而是“对他们有意义”。',
+        '让客户愿意转介绍：交付包里写清“我为你做了什么”与“你可以怎么分享”。'
+      ],
+      practice: '练习：为“会前/会中/会后”各设计 1 个加分点，并写进你的服务SOP。'
+    },
+    {
+      title: '06｜复盘系统：每次沟通 3 分钟，持续升级模板',
+      bullets: [
+        '固定复盘三问：结论是什么？风险是什么？下一步是谁在什么时候做什么？',
+        '把复盘沉淀到模板库：让下一单更快、更稳、更好交付。',
+        '每月做一次“模板体检”：删掉无用字段，补上证据与责任人。'
+      ],
+      practice: '练习：本周所有沟通都用“结论+风险”填写，并在月底整理出“高频风险清单”。'
+    }
+  ];
+
+  function renderTraining(){
+    const wrap = $('#trainingContent');
+    wrap.innerHTML = TRAINING.map((m, idx)=>`
+      <div class="card" style="margin-bottom:12px">
+        <div class="hd"><h2>${escapeHtml(m.title)}</h2><span class="pill">模块 ${idx+1}/${TRAINING.length}</span></div>
+        <div class="bd" style="line-height:1.75">
+          <ul style="margin:0; padding-left:18px">
+            ${m.bullets.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}
+          </ul>
+          <div class="sep"></div>
+          <div class="notice"><b>实操作业</b><div class="small" style="margin-top:6px">${escapeHtml(m.practice)}</div></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ---- deliver ----
+  function generateDeliver(){
+    const cid = $('#deliverClientSelect').value;
+    const c = getClient(cid);
+    if(!c){ toast('未选择客户', '请先选择客户。'); return; }
+    const p = clientProgress(c);
+    const brand = state.settings.brandName || '叙述婚礼｜服务交付';
+    const lines = [];
+    lines.push(`${brand}`);
+    lines.push(`客户：${c.name}  档期：${c.date||'未定档'}  状态：${labelStatus(c.status)}`);
+    lines.push('');
+    lines.push('【一、爱情故事摘要】');
+    lines.push('（写法：背景→相遇→决定→承诺。建议 120-200 字，可直接给新人分享。）');
+    lines.push('');
+    lines.push('【二、婚礼当天时间轴（最终版）】');
+    lines.push('（写法：时间-地点-负责人-交付物-风险预案）');
+    lines.push('');
+    lines.push('【三、关键镜头清单（摄影摄像对接）】');
+    lines.push('（写法：必拍镜头/情绪镜头/道具镜头/亲友合影）');
+    lines.push('');
+    lines.push('【四、现场彩排与执行要点（团队版）】');
+    lines.push('（写法：谁在什么时候做什么，备用方案是什么）');
+    lines.push('');
+    lines.push('【五、纪念物清单】');
+    lines.push('证书/誓词/誓言卡/合影/花艺标本/伴手礼/惊喜物件/现场音频等');
+    lines.push('');
+    lines.push('【六、售后回访与长期关系】');
+    lines.push('建议：婚后 3 天回访、婚后 30 天游记/相册提醒、纪念日提醒与二次转介绍话术。');
+    lines.push('');
+    lines.push(`【执行进度】当前清单完成度：${p.pct}%（已完成 ${p.done} 项）`);
+    lines.push('');
+    lines.push('—— 你可以在本系统“项目执行”页把最终时间轴与关键镜头清单补齐，然后点击“打印/保存PDF”。');
+
+    $('#deliverText').value = (c.deliver && c.deliver.text) ? c.deliver.text : lines.join('\n');
+    toast('已生成预览', '交付包内容已填充，可继续润色。');
+  }
+
+  function saveDeliver(){
+    const cid = $('#deliverClientSelect').value;
+    const c = getClient(cid);
+    if(!c){ toast('未选择客户',''); return; }
+    c.deliver = c.deliver || {text:''};
+    c.deliver.text = $('#deliverText').value || '';
+    save();
+    toast('已保存', '交付包已存入该客户档案。');
+  }
+
+  async function copyDeliver(){
+    try{
+      await navigator.clipboard.writeText($('#deliverText').value || '');
+      toast('已复制', '交付包内容已复制到剪贴板。');
+    }catch(e){
+      toast('复制失败', '浏览器权限限制，可手动全选复制。');
+    }
+  }
+
+  // ---- brief ----
+  function saveBrief(){
+    const c = ensureClient();
+    if(!c) return;
+    c.brief = c.brief || {conclusion:'', risks:''};
+    c.brief.conclusion = $('#briefConclusion').value || '';
+    c.brief.risks = $('#briefRisks').value || '';
+    save();
+    toast('已保存', '复盘内容已写入客户档案。');
+  }
+
+  // ---- import/export ----
+  function exportAll(){
+    const filename = `叙述婚礼_备份_${new Date().toISOString().slice(0,10)}.json`;
+    dl(filename, JSON.stringify(state, null, 2), 'application/json');
+    toast('已导出', filename);
+  }
+
+  function exportClient(){
+    const c = ensureClient();
+    if(!c) return;
+    const filename = `客户_${c.name}_${new Date().toISOString().slice(0,10)}.json`.replace(/[\\/:*?"<>|]/g,'_');
+    dl(filename, JSON.stringify(c, null, 2), 'application/json');
+    toast('已导出', filename);
+  }
+
+  function importAll(){
+    const input = $('#fileInput');
+    input.value = '';
+    input.onchange = async ()=>{
+      const file = input.files && input.files[0];
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const obj = JSON.parse(text);
+        // naive merge: accept full state or client
+        if(obj && obj.clients && obj.templates){
+          state = {...structuredClone(defaultState), ...obj};
+        }else if(obj && obj.id && obj.name){
+          // single client
+          const exist = getClient(obj.id);
+          if(exist) Object.assign(exist, obj);
+          else state.clients.push(obj);
+        }else{
+          throw new Error('不支持的JSON结构');
+        }
+        save();
+        applyTheme();
+        toast('导入成功', '数据已恢复。');
+        renderAll();
+      }catch(e){
+        console.error(e);
+        toast('导入失败', '请确认选择的是系统导出的 JSON 文件。');
+      }
+    };
+    input.click();
+  }
+
+  // ---- settings ----
+  function toggleTheme(){
+    state.settings.theme = (state.settings.theme==='light') ? 'dark' : 'light';
+    save();
+    applyTheme();
+    toast('已切换主题', state.settings.theme==='light'?'浅色':'深色');
+  }
+
+  function saveSettings(){
+    state.settings.brandName = $('#brandName').value || '';
+    save();
+    toast('已保存设置', '打印页将显示你的品牌名。');
+  }
+
+  function wipeAll(){
+    if(!confirm('确定要清空本地数据吗？此操作不可恢复，建议先导出备份。')) return;
+    localStorage.removeItem(KEY);
+    state = structuredClone(defaultState);
+    save();
+    applyTheme();
+    toast('已清空', '本地数据已重置。');
+    renderAll();
+  }
+
+  // ---- event delegation ----
+  document.addEventListener('click', (e)=>{
+    const t = e.target.closest('[data-action]');
+    if(!t) return;
+    const a = t.dataset.action;
+
+    if(a==='openSidebar') return openSidebar();
+    if(a==='closeSidebar') return closeSidebar();
+
+    if(a==='goto') return showView(t.dataset.view);
+
+    // Schedule actions
+    if(a==='scheduleMode'){
+      scheduleMode = t.dataset.mode || 'calendar';
+      renderSchedule();
+      toast('已切换', scheduleMode==='calendar'?'日历视图':'月订单视图');
+      return;
+    }
+    if(a==='schedulePrev'){
+      scheduleMonth = addMonth(scheduleMonth, -1);
+      renderSchedule();
+      return;
+    }
+    if(a==='scheduleNext'){
+      scheduleMonth = addMonth(scheduleMonth, +1);
+      renderSchedule();
+      return;
+    }
+    if(a==='scheduleAdd'){
+      showView('clients');
+      clearClientForm();
+      $('#fDate').value = scheduleSelectedDate || (scheduleMonth + '-01');
+      toast('添加档期', '已预填档期日期，填写客户信息后保存即可。');
+      return;
+    }
+    if(a==='openDay'){
+      const ds = t.dataset.date;
+      // if clicked day in other month, jump month first
+      const ym = (ds||'').slice(0,7);
+      if(ym && ym!==scheduleMonth){ scheduleMonth = ym; renderSchedule(); }
+      openDayModal(ds);
+      return;
+    }
+    if(a==='closeDayModal'){ closeDayModal(); return; }
+    if(a==='printDayRun'){
+      const ds = scheduleSelectedDate || todayStr();
+      printDayRun(ds);
+      return;
+    }
+    if(a==='dayModalAdd'){
+      showView('clients');
+      clearClientForm();
+      $('#fDate').value = scheduleSelectedDate || todayStr();
+      toast('当天新增客户', '已预填档期日期。保存后会自动出现在该日期。');
+      closeDayModal();
+      return;
+    }
+    if(a==='scheduleEditClient'){
+      const c = getClient(t.dataset.id);
+      if(c){
+        showView('clients');
+        fillClientForm(c);
+        toast('编辑客户', '可在右侧修改信息并保存。');
+      }
+      closeDayModal();
+      return;
+    }
+
+    if(a==='print') return window.print();
+
+    if(a==='newClient'){
+      showView('clients');
+      clearClientForm();
+      $('#fDate').value = todayStr();
+      toast('新建客户', '在右侧填写信息并点击保存。');
+      return;
+    }
+
+    if(a==='saveClient'){ saveClientFromForm(); return; }
+    if(a==='deleteClient'){ if(editingClientId && confirm('确定删除该客户？')) deleteClient(editingClientId); return; }
+    if(a==='setCurrent'){
+      const id = editingClientId || (state.clients[0] && state.clients[0].id);
+      if(!id){ toast('没有客户', '先新建一个客户。'); return; }
+      setCurrentClient(id);
+      toast('已设为当前客户', '去“项目执行”开始套用模板。');
+      renderAll();
+      return;
+    }
+    if(a==='setCurrentById'){
+      setCurrentClient(t.dataset.id);
+      toast('已设为当前客户', '现在进入项目执行页。');
+      renderAll();
+      return;
+    }
+    if(a==='editClient'){
+      const c = getClient(t.dataset.id);
+      if(c){ fillClientForm(c); }
+      return;
+    }
+
+    if(a==='applyTemplate'){
+      const c = ensureClient(); if(!c) return;
+      const key = $('#applyTemplateSelect').value;
+      applyTemplateToClient(key, c);
+      activeChecklistKey = key;
+      renderAll();
+      return;
+    }
+    if(a==='applyTplToCurrent'){
+      const c = ensureClient(); if(!c) return;
+      const key = t.dataset.key;
+      applyTemplateToClient(key, c);
+      activeChecklistKey = key;
+      renderAll();
+      showView('client');
+      return;
+    }
+    if(a==='clearClientChecklists'){
+      const c = ensureClient(); if(!c) return;
+      if(!confirm('确定清空该客户所有清单？')) return;
+      c.checklists = {};
+      activeChecklistKey = null;
+      save();
+      toast('已清空', '该客户清单已清空。');
+      renderAll();
+      return;
+    }
+
+    if(a==='switchChecklist'){
+      activeChecklistKey = t.dataset.key;
+      renderChecklistTabs();
+      return;
+    }
+
+    if(a==='toggleDone'){
+      const c = ensureClient(); if(!c) return;
+      const idx = parseInt(t.dataset.idx,10);
+      const rows = c.checklists[activeChecklistKey] || [];
+      rows[idx]._done = !rows[idx]._done;
+      save();
+      renderChecklistTable();
+      return;
+    }
+    if(a==='delChecklistRow'){
+      const c = ensureClient(); if(!c) return;
+      const idx = parseInt(t.dataset.idx,10);
+      c.checklists[activeChecklistKey].splice(idx,1);
+      save();
+      renderChecklistTable();
+      toast('已删除', '清单行已移除。');
+      return;
+    }
+    if(a==='addChecklistRow'){ addChecklistRow(); return; }
+
+    if(a==='saveBrief'){ saveBrief(); return; }
+
+    if(a==='markCompleted'){
+      const c = ensureClient(); if(!c) return;
+      c.status = 'completed';
+      save();
+      toast('已完成', '客户状态已更新为“已完成”。');
+      renderAll();
+      return;
+    }
+
+    if(a==='editTpl'){
+      editingTplKey = t.dataset.key;
+      renderTplEditor();
+      toast('进入模板编辑', '编辑后自动保存。');
+      return;
+    }
+    if(a==='addTplRow'){
+      const ttpl = editingTplKey ? state.templates[editingTplKey] : null;
+      if(!ttpl){ toast('未选择模板',''); return; }
+      const obj = {_id: uid(), _done:false};
+      (ttpl.fields||[]).forEach(f=> obj[f]='');
+      ttpl.rows = ttpl.rows || [];
+      ttpl.rows.unshift(obj);
+      save();
+      renderTplEditor();
+      return;
+    }
+    if(a==='delTplRow'){
+      const ttpl = editingTplKey ? state.templates[editingTplKey] : null;
+      if(!ttpl) return;
+      const idx = parseInt(t.dataset.idx,10);
+      ttpl.rows.splice(idx,1);
+      save();
+      renderTplEditor();
+      return;
+    }
+    if(a==='deleteTpl'){
+      if(!editingTplKey){ toast('未选择模板',''); return; }
+      if(!confirm('确定删除该模板？')) return;
+      delete state.templates[editingTplKey];
+      editingTplKey = null;
+      save();
+      toast('已删除模板','');
+      renderAll();
+      return;
+    }
+    if(a==='duplicateTpl'){
+      const ttpl = editingTplKey ? state.templates[editingTplKey] : null;
+      if(!ttpl){ toast('未选择模板',''); return; }
+      const newKey = ttpl.key + '_copy_' + uid();
+      state.templates[newKey] = {
+        ...structuredClone(ttpl),
+        key: newKey,
+        name: ttpl.name + '（复制）',
+        rows: (ttpl.rows||[]).map(r=> ({...structuredClone(r), _id: uid()}))
+      };
+      save();
+      toast('已复制模板','请在左侧列表找到“复制”版本进行编辑。');
+      renderAll();
+      return;
+    }
+    if(a==='resetTemplates'){ resetTemplates(); return; }
+
+    if(a==='export'){ exportAll(); return; }
+    if(a==='import'){ importAll(); return; }
+    if(a==='exportClient'){ exportClient(); return; }
+
+    if(a==='toggleTheme'){ toggleTheme(); return; }
+    if(a==='saveSettings'){ saveSettings(); return; }
+    if(a==='wipeAll'){ wipeAll(); return; }
+
+    if(a==='generateDeliver'){ generateDeliver(); return; }
+    if(a==='saveDeliver'){ saveDeliver(); return; }
+    if(a==='copyDeliver'){ copyDeliver(); return; }
+    if(a==='downloadHTML'){ dl('叙述婚礼_接单执行系统.html', document.documentElement.outerHTML, 'text/html'); return; }
+  });
+
+  document.addEventListener('input', (e)=>{
+    const t = e.target.closest('[data-action]');
+    if(!t) return;
+    const a = t.dataset.action;
+
+    if(a==='editChecklistCell'){
+      const c = currentClient(); if(!c || !activeChecklistKey) return;
+      const idx = parseInt(t.dataset.idx,10);
+      const field = t.dataset.field;
+      c.checklists[activeChecklistKey][idx][field] = t.value;
+      save();
+      $('#savePill').textContent = '已保存';
+      return;
+    }
+    if(a==='editTplCell'){
+      const tpl = editingTplKey ? state.templates[editingTplKey] : null;
+      if(!tpl) return;
+      const idx = parseInt(t.dataset.idx,10);
+      const field = t.dataset.field;
+      tpl.rows[idx][field] = t.value;
+      save();
+      $('#savePill').textContent = '已保存';
+      return;
+    }
+  });
+
+  $('#clientSearch').addEventListener('input', renderClientList);
+  $('#tplSearch').addEventListener('input', renderTplList);
+
+  // ---- sidebar nav clicks ----
+  $('#nav').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-view]');
+    if(!btn) return;
+    showView(btn.dataset.view);
+  });
+
+
+  // ---- schedule (calendar / month list) ----
+  let scheduleMode = 'calendar';
+  let scheduleMonth = new Date().toISOString().slice(0,7);
+  let scheduleSelectedDate = null;
+
+  function ymToParts(ym){
+    const [y,m] = (ym||'').split('-').map(x=>parseInt(x,10));
+    return {y, m};
+  }
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function addMonth(ym, delta){
+    const {y,m} = ymToParts(ym);
+    const d = new Date(y, (m-1)+delta, 1);
+    return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+  }
+  function weekdayLabel(){
+    // Monday-first
+    return ['一','二','三','四','五','六','日'].map(x=>`周${x}`);
+  }
+  function clientsByDate(){
+    const map = {};
+    for(const c of state.clients){
+      if(!c.date) continue;
+      map[c.date] = map[c.date] || [];
+      map[c.date].push(c);
+    }
+    // sort within date
+    for(const k in map){
+      map[k].sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+    }
+    return map;
+  }
+
+  function renderSchedule(){
+    $('#scheduleMonthLabel').textContent = scheduleMonth;
+    const calWrap = $('#scheduleCalendar');
+    const listWrap = $('#scheduleMonthList');
+    const map = clientsByDate();
+
+    // Toggle mode
+    if(scheduleMode==='calendar'){
+      calWrap.classList.remove('hidden');
+      listWrap.classList.add('hidden');
+    }else{
+      calWrap.classList.add('hidden');
+      listWrap.classList.remove('hidden');
+    }
+
+    // Calendar render
+    const {y,m} = ymToParts(scheduleMonth);
+    const first = new Date(y, m-1, 1);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    // Monday-first index
+    const startIdx = (first.getDay() + 6) % 7;
+    const totalCells = 42;
+
+    let calHtml = `<div class="calWrap">
+      <div class="calHead">${weekdayLabel().map(x=>`<div>${x}</div>`).join('')}</div>
+      <div class="calGrid">`;
+
+    // previous month info
+    const prevYm = addMonth(scheduleMonth, -1);
+    const {y:py, m:pm} = ymToParts(prevYm);
+    const prevDays = new Date(py, pm, 0).getDate();
+
+    for(let i=0;i<totalCells;i++){
+      let dayNum, out=false, cellYm=scheduleMonth;
+      if(i < startIdx){
+        out=true;
+        dayNum = prevDays - (startIdx-1-i);
+        cellYm = prevYm;
+      }else if(i >= startIdx + daysInMonth){
+        out=true;
+        dayNum = i - (startIdx + daysInMonth) + 1;
+        cellYm = addMonth(scheduleMonth, +1);
+      }else{
+        dayNum = i - startIdx + 1;
+      }
+      const ds = `${cellYm}-${pad2(dayNum)}`;
+      const orders = map[ds] || [];
+      const has = orders.length>0;
+      calHtml += `
+        <div class="calDay ${out?'out':''} ${has?'has':''}" data-action="openDay" data-date="${ds}">
+          <div class="calNum">${dayNum}</div>
+          ${has ? `<div class="calBadge">${orders.length} 单</div>` : ``}
+          <div class="calMeta">${has ? orders.slice(0,3).map(o=>escapeHtml(o.name)).join('<br/>') : '<span class="muted">无订单</span>'}</div>
+        </div>
+      `;
+    }
+    calHtml += `</div></div>`;
+    calWrap.innerHTML = calHtml;
+
+    // Month list render
+    const monthClients = state.clients
+      .filter(c=> (c.date||'').slice(0,7)===scheduleMonth)
+      .sort((a,b)=> (a.date||'').localeCompare(b.date||'') || (a.name||'').localeCompare(b.name||''));
+    if(!monthClients.length){
+      listWrap.innerHTML = `<div class="small muted">本月暂无订单。你可以点击右上角「添加客户档期」。</div>`;
+    }else{
+      // group by date
+      const groups = {};
+      monthClients.forEach(c=>{
+        groups[c.date] = groups[c.date] || [];
+        groups[c.date].push(c);
+      });
+      listWrap.innerHTML = Object.keys(groups).sort().map(d=>{
+        const items = groups[d].map(c=>`
+          <div class="miniCard">
+            <div class="top">
+              <div>
+                <div style="font-weight:900">${escapeHtml(c.name||'未命名')}</div>
+                <div class="small muted">状态：${escapeHtml(labelStatus(c.status))}｜电话：${escapeHtml(c.phone||'—')}</div>
+              </div>
+              <div class="row">
+                <button class="btn" data-action="scheduleEditClient" data-id="${c.id}">✏️ 编辑</button>
+                <button class="btn" data-action="setCurrentById" data-id="${c.id}">⭐ 当前</button>
+                <button class="btn" data-action="goto" data-view="client">🧾 执行</button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        return `<div class="listGroup">
+          <div class="dateTitle">${escapeHtml(d)}（${groups[d].length} 单）</div>
+          ${items}
+        </div>`;
+      }).join('');
+    }
+  }
+
+  function openDayModal(dateStr){
+    scheduleSelectedDate = dateStr;
+    const map = clientsByDate();
+    const orders = map[dateStr] || [];
+    $('#dayModalTitle').textContent = `档期：${dateStr}（${orders.length} 单）`;
+    const body = $('#dayModalBody');
+    if(!orders.length){
+      body.innerHTML = `<div class="small muted">当天暂无订单，点击右上角「当天新增客户」即可快速创建。</div>`;
+    }else{
+      body.innerHTML = orders.map(c=>`
+        <div class="miniCard">
+          <div class="top">
+            <div>
+              <div style="font-weight:900">${escapeHtml(c.name||'未命名')}</div>
+              <div class="small muted">状态：${escapeHtml(labelStatus(c.status))}｜电话：${escapeHtml(c.phone||'—')}｜地点：${escapeHtml(c.city||'—')}</div>
+            </div>
+            <div class="row">
+              <button class="btn" data-action="scheduleEditClient" data-id="${c.id}">✏️ 编辑</button>
+              <button class="btn" data-action="setCurrentById" data-id="${c.id}">⭐ 当前</button>
+              <button class="btn" data-action="goto" data-view="client">🧾 执行</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    $('#dayModalWrap').classList.remove('hidden');
+  }
+
+  function closeDayModal(){
+    $('#dayModalWrap').classList.add('hidden');
+  }
+
+  // ---- Day run sheet (A4) ----
+  function summarizeRow(row, fields){
+    // join first 3 non-empty fields for readability
+    const parts = [];
+    for(const f of fields){
+      const v = (row && row[f]) ? String(row[f]).trim() : '';
+      if(!v) continue;
+      parts.push(v);
+      if(parts.length>=3) break;
+    }
+    // fallback: any keys except meta
+    if(!parts.length && row){
+      for(const k in row){
+        if(k.startsWith('_')) continue;
+        const v = String(row[k]||'').trim();
+        if(!v) continue;
+        parts.push(v);
+        if(parts.length>=3) break;
+      }
+    }
+    return parts.join(' ｜ ');
+  }
+
+  function getClientKeyTodos(client, limit=16){
+    const lists = client.checklists || {};
+    const items = [];
+    for(const k in lists){
+      const rows = lists[k] || [];
+      const tpl = state.templates[k];
+      const fields = tpl ? (tpl.fields||[]) : [];
+      for(const r of rows){
+        if(r && r._done) continue;
+        const text = summarizeRow(r, fields);
+        if(text) items.push(text);
+      }
+    }
+    // unique + keep order
+    const seen = new Set();
+    const uniq = [];
+    for(const it of items){
+      if(seen.has(it)) continue;
+      seen.add(it);
+      uniq.push(it);
+      if(uniq.length>=limit) break;
+    }
+    return uniq;
+  }
+
+  function buildDayRunSheet(dateStr){
+    const brand = state.settings.brandName || '叙述婚礼｜服务交付';
+    const map = clientsByDate();
+    const orders = map[dateStr] || [];
+    const now = new Date();
+    const genTime = now.toLocaleString('zh-CN');
+
+    const header = `
+      <div class="a4">
+        <div class="meta">
+          <div><b>${escapeHtml(brand)}</b><div class="muted">当天执行单（A4）</div></div>
+          <div style="text-align:right">
+            <div class="pill">档期：${escapeHtml(dateStr)}</div>
+            <div class="muted" style="margin-top:4px">生成：${escapeHtml(genTime)}</div>
+          </div>
+        </div>
+        <h1 style="margin-top:4mm">当天执行总览（${orders.length} 单）</h1>
+        <div class="hr"></div>
+    `;
+
+    const empty = `
+      <div class="box">
+        <b>今日暂无订单</b>
+        <div class="muted" style="margin-top:6px">你可以在「档期记录」点击日期 → 当天新增客户 → 保存后再打印。</div>
+      </div>
+    `;
+
+    const roleTable = `
+      <table>
+        <thead><tr>
+          <th style="width:18%">角色</th><th>负责人 / 联系方式 / 到位时间（现场手填）</th>
+          <th style="width:18%">角色</th><th>负责人 / 联系方式 / 到位时间（现场手填）</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>主持/司仪</td><td></td><td>策划/统筹</td><td></td></tr>
+          <tr><td>化妆师</td><td></td><td>婚纱礼服</td><td></td></tr>
+          <tr><td>摄影师</td><td></td><td>摄像师</td><td></td></tr>
+          <tr><td>酒店对接</td><td></td><td>灯光音响</td><td></td></tr>
+          <tr><td>礼炮/车队</td><td></td><td>其他</td><td></td></tr>
+        </tbody>
+      </table>
+    `;
+
+    const blocks = orders.length ? orders.map((c, idx)=>{
+      const p = clientProgress(c);
+      const todos = getClientKeyTodos(c, 16);
+      const todosHtml = todos.length ? `<ol style="margin:6px 0 0; padding-left:18px">${todos.map(x=>`<li style="margin:2px 0">${escapeHtml(x)}</li>`).join('')}</ol>` :
+        `<div class="muted" style="margin-top:6px">暂无未完成事项（或还未套用清单模板）。</div>`;
+
+      return `
+        <div class="box">
+          <div class="row" style="justify-content:space-between; align-items:flex-start">
+            <div>
+              <div style="font-size:14px; font-weight:900">${escapeHtml(idx+1)}. ${escapeHtml(c.name||'未命名')}</div>
+              <div class="muted" style="margin-top:4px; font-size:12px; line-height:1.5">
+                电话：${escapeHtml(c.phone||'—')} ｜ 微信：${escapeHtml(c.wechat||'—')}<br/>
+                地点：${escapeHtml(c.city||'—')} ｜ 套餐：${escapeHtml(c.package||'—')} ｜ 预算：${escapeHtml(c.budget||'—')}<br/>
+                状态：${escapeHtml(labelStatus(c.status))} ｜ 执行进度：${p.pct}%（${p.done}/${p.total||0}）
+              </div>
+            </div>
+            <div class="pill">客户ID：${escapeHtml(c.id||'')}</div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div style="font-weight:900; margin-bottom:4px">关键未完成事项（最多 16 条，优先给现场执行）</div>
+          ${todosHtml}
+
+          <div class="hr"></div>
+
+          <div style="font-weight:900; margin-bottom:4px">团队对接（可手填）</div>
+          ${roleTable}
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <div style="flex:1; min-width: 320px">
+              <div style="font-weight:900; margin-bottom:4px">风险与预案（来自项目复盘/现场补充）</div>
+              <div class="noteLines">${escapeHtml((c.brief && (c.brief.risks||c.brief.conclusion)) ? ((c.brief.risks?('风险：'+c.brief.risks+'\n'):'') + (c.brief.conclusion?('结论：'+c.brief.conclusion):'')) : '现场变更、长辈意见、流程调整、天气/迟到等……')}</div>
+            </div>
+            <div style="flex:1; min-width: 320px">
+              <div style="font-weight:900; margin-bottom:4px">现场备注（自由记录）</div>
+              <div class="noteLines"> </div>
+            </div>
+          </div>
+
+          <div class="sig">
+            <div>执行负责人签字</div>
+            <div>客户确认/回执</div>
+          </div>
+        </div>
+      `;
+    }).join('') : empty;
+
+    const footer = `
+        <div class="box">
+          <b>快速提示</b>
+          <div class="muted" style="margin-top:6px; line-height:1.55">
+            ① 打印前建议：在「项目执行」把最终时间轴/关键镜头/责任人补齐；<br/>
+            ② 现场优先看：未完成事项 + 风险预案；<br/>
+            ③ 若有多单同日：每单执行单独页面，避免混乱。
+          </div>
+        </div>
+      </div>
+    `;
+    return header + blocks + footer;
+  }
+
+  function printDayRun(dateStr){
+    const area = $('#printArea');
+    area.innerHTML = buildDayRunSheet(dateStr);
+    area.classList.add('show');
+    document.body.classList.add('printing');
+    // allow layout flush
+    setTimeout(()=> window.print(), 50);
+  }
+
+  window.addEventListener('afterprint', ()=>{
+    document.body.classList.remove('printing');
+    const area = $('#printArea');
+    area.classList.remove('show');
+    // keep content for debugging? clear to avoid stale
+    area.innerHTML = '';
+  });
+
+  // ---- render all ----
+  function renderAll(){
+    renderHeader();
+    renderDashboard();
+    renderClientList();
+    renderTemplateSelects();
+    renderTplList();
+    renderTplEditor();
+    renderClientMeta();
+    renderChecklistTabs();
+    renderClientProgress();
+    renderTraining();
+    renderSchedule();
+  }
+
+  // init
+  if(!state.clients.length){
+    // Seed one example client for first-time UX
+    const example = {
+      id: uid(),
+      name: '示例客户（可删除）',
+      date: todayStr(),
+      phone: '',
+      wechat: '',
+      city: '',
+      status: 'in_progress',
+      package: '',
+      budget: '',
+      notes: '提示：这是一个示例客户。\n你可以：\n1）去“清单模板库”查看默认模板；\n2）在“项目执行”里套用模板；\n3）勾选执行项；\n4）在“纪念交付包”生成交付内容；\n5）导出 JSON 做备份。',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      checklists: {},
+      brief: {conclusion:'', risks:''},
+      deliver: {text:''}
+    };
+    state.clients.push(example);
+    state.currentClientId = example.id;
+    save();
+  }
+  renderAll();
+  showView('dashboard');
+})();
+</script>
+</body>
+</html>
